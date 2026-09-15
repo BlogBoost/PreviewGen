@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
@@ -182,6 +183,19 @@ display: block; width: 100%; background: #ffbf45; color: #111;
 text-decoration: none; padding: 14px; border-radius: 14px;
 font-weight: bold; font-size: 16px; margin-top: 15px;
 }
+
+/* Поле для ввода промокода в модалке */
+.promo-input {
+margin-top: 15px;
+padding: 10px;
+border-radius: 8px;
+border: 1px solid #354263;
+background: #18213a;
+color: #fff;
+width: 100%;
+text-align: center;
+font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -208,6 +222,12 @@ font-weight: bold; font-size: 16px; margin-top: 15px;
             <option value="vlog">🎥 Влог / Жизнь</option>
         </select>
 
+        <!-- СКРЫТАЯ PRO-ФУНКЦИЯ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ВВОДА ПАРОЛЯ) -->
+        <div id="proFeaturesBlock" style="display: none; border: 1px dashed #ffbf45; padding: 12px; border-radius: 14px; margin-top: 15px; background: rgba(255,191,69,0.05);">
+            <label style="color: #ffbf45; margin-top: 0;">👑 Настройки PRO: Загрузить свой фон</label>
+            <input type="file" id="imageLoader" accept="image/*" style="padding: 10px; font-size: 14px;">
+        </div>
+
         <button class="main" id="updateBtn">✨ Обновить превью</button>
         <button class="random" id="randomBgBtn">🎨 Случайный фон</button>
         <button class="pro-btn" id="proBtn">🔥 Активировать PRO версию</button>
@@ -224,7 +244,7 @@ font-weight: bold; font-size: 16px; margin-top: 15px;
     </div>
 </div>
 
-<!-- ОКНО ПОКУПКИ PRO ВЕРСИИ С ОБНОВЛЕННОЙ ЦЕНОЙ -->
+<!-- ОКНО ПОКУПКИ PRO ВЕРСИИ -->
 <div class="modal-overlay" id="proModal">
     <div class="modal-content">
         <button class="modal-close" id="modalCloseBtn">&times;</button>
@@ -232,15 +252,17 @@ font-weight: bold; font-size: 16px; margin-top: 15px;
         <h3>PreviewGen PRO</h3>
         <p>Откройте доступ ко всем премиум-функциям генератора:</p>
         <ul>
-            <li>🔥 Уникальные 3D-шрифты для текста</li>
-            <li>🎨 Более 50+ эксклюзивных VIP-градиентов</li>
             <li>🖼️ Возможность загружать свои картинки на фон</li>
+            <li>🎨 Более 50+ эксклюзивных VIP-градиентов</li>
+            <li>🔥 Уникальные 3D-шрифты для текста</li>
             <li>⚡ Скачивание в Ultra-HD качестве (4K)</li>
         </ul>
-        <p style="font-weight: bold; color: #fff;">Стоимость активации: 500 руб.</p>
+        <p style="font-weight: bold; color: #fff; margin-bottom: 5px;">Стоимость активации: 500 руб.</p>
         <a href="https://donationalerts.com" target="_blank" class="buy-pro-btn">
             Перейти к оплате
         </a>
+        
+        <input type="text" class="promo-input" id="promoCodeInput" placeholder="Есть код активации? Введите сюда">
     </div>
 </div>
 
@@ -254,15 +276,51 @@ const categorySelect = document.getElementById('categorySelect');
 const updateBtn = document.getElementById('updateBtn');
 const randomBgBtn = document.getElementById('randomBgBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const imageLoader = document.getElementById('imageLoader');
+const proFeaturesBlock = document.getElementById('proFeaturesBlock');
 
 // Логика для PRO окна
 const proBtn = document.getElementById('proBtn');
 const proModal = document.getElementById('proModal');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
+const promoCodeInput = document.getElementById('promoCodeInput');
+
+let isProActivated = false;
+let userUploadedImage = null;
 
 proBtn.addEventListener('click', () => proModal.style.display = 'flex');
 modalCloseBtn.addEventListener('click', () => proModal.style.display = 'none');
 proModal.addEventListener('click', (e) => { if(e.target === proModal) proModal.style.display = 'none'; });
+
+// Проверка секретного кода админа / покупателя
+promoCodeInput.addEventListener('input', () => {
+    const code = promoCodeInput.value.trim().toUpperCase();
+    if (code === 'ADMIN777') {
+        isProActivated = true;
+        proFeaturesBlock.style.display = 'block';
+        proBtn.innerHTML = '👑 PRO Версия Активна';
+        proBtn.style.background = '#273354';
+        proBtn.style.color = '#ffbf45';
+        proBtn.disabled = true;
+        alert('Доступ разработчика активирован! Появилась функция загрузки картинок.');
+        proModal.style.display = 'none';
+        drawPreview();
+    }
+});
+
+// Обработка загрузки пользовательского изображения
+imageLoader.addEventListener('change', (e) => {
+    const reader = new FileReader();
+    reader.onload = function(event){
+        const img = new Image();
+        img.onload = function(){
+            userUploadedImage = img;
+            drawPreview();
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
 
 // Список красивых градиентов для фона
 const gradients = [
@@ -278,12 +336,18 @@ const gradients = [
 let currentGradient = gradients[0];
 
 function drawPreview() {
-    let grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    grad.addColorStop(0, currentGradient[0]);
-    grad.addColorStop(0.5, currentGradient[1] || currentGradient[0]);
-    grad.addColorStop(1, currentGradient[2] || currentGradient[0]);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Если активирован PRO режим и загружена картинка владельца
+    if (isProActivated && userUploadedImage) {
+        ctx.drawImage(userUploadedImage, 0, 0, canvas.width, canvas.height);
+    } else {
+        // Обычный градиентный фон
+        let grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, currentGradient[0]);
+        grad.addColorStop(0.5, currentGradient[1] || currentGradient[0]);
+        grad.addColorStop(1, currentGradient[2] || currentGradient[0]);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
     const category = categorySelect.value;
@@ -295,68 +359,3 @@ function drawPreview() {
         ctx.fillText('</>', canvas.width - 350, canvas.height - 100);
     } else if (category === 'crypto') {
         ctx.font = '200px sans-serif';
-        ctx.fillText('₿', canvas.width - 220, canvas.height - 100);
-    } else if (category === 'vlog') {
-        ctx.font = '180px sans-serif';
-        ctx.fillText('📸', canvas.width - 250, canvas.height - 80);
-    }
-
-    const text = textInput.value.toUpperCase();
-    ctx.fillStyle = colorInput.value;
-    ctx.font = 'bold 75px system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 5;
-    ctx.shadowOffsetY = 5;
-
-    const words = text.split(' ');
-    let line = '';
-    let x = 80;
-    let y = canvas.height / 2 - 40;
-    let lineHeight = 90;
-
-    for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        let metrics = ctx.measureText(testLine);
-        let testWidth = metrics.width;
-        if (testWidth > canvas.width - 400 && n > 0) {
-            ctx.fillText(line, x, y);
-            line = words[n] + ' ';
-            y += lineHeight;
-        } else {
-            line = testLine;
-        }
-    }
-    ctx.fillText(line, x, y);
-    
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-}
-
-randomBgBtn.addEventListener('click', () => {
-    const randomIndex = Math.floor(Math.random() * gradients.length);
-    currentGradient = gradients[randomIndex];
-    drawPreview();
-});
-
-updateBtn.addEventListener('click', drawPreview);
-textInput.addEventListener('input', drawPreview);
-colorInput.addEventListener('input', drawPreview);
-categorySelect.addEventListener('change', drawPreview);
-
-downloadBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.download = 'preview.png';
-    link.href = canvas.toDataURL();
-    link.click();
-});
-
-window.onload = drawPreview;
-</script>
-
-</body>
-</html>
