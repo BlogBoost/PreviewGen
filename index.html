@@ -146,6 +146,42 @@ text-align: center;
 margin-top: 15px;
 line-height: 1.4;
 }
+
+/* Стили для всплывающего окна PRO версии */
+.modal-overlay {
+display: none;
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0, 0, 0, 0.8);
+z-index: 1000;
+justify-content: center;
+align-items: center;
+padding: 16px;
+}
+.modal-content {
+background: #121a2e;
+border: 2px solid #ffbf45;
+border-radius: 22px;
+padding: 24px;
+max-width: 450px;
+width: 100%;
+text-align: center;
+box-shadow: 0 10px 30px rgba(255, 191, 69, 0.2);
+position: relative;
+}
+.modal-close {
+position: absolute;
+top: 15px; right: 15px;
+background: none; border: 0; color: #aaa;
+font-size: 22px; cursor: pointer; padding: 0;
+}
+.modal-content h3 { color: #ffbf45; margin-top: 10px; font-size: 24px; }
+.modal-content ul { text-align: left; color: #ccc; line-height: 1.6; margin: 20px 0; padding-left: 20px; }
+.buy-pro-btn {
+display: block; width: 100%; background: #ffbf45; color: #111;
+text-decoration: none; padding: 14px; border-radius: 14px;
+font-weight: bold; font-size: 16px; margin-top: 15px;
+}
 </style>
 </head>
 <body>
@@ -157,6 +193,7 @@ line-height: 1.4;
         <p>Создавай крутые превью для видео за пару секунд</p>
     </div>
 
+    <!-- КНОПКА PRO ТЕПЕРЬ ТУТ, ВНУТРИ ГЛАВНОЙ КАРТОЧКИ -->
     <div class="card">
         <label for="textInput">Текст на превью</label>
         <input type="text" id="textInput" value="КАК СОЗДАТЬ СВОЙ САЙТ" placeholder="Введите заголовок...">
@@ -174,6 +211,7 @@ line-height: 1.4;
 
         <button class="main" id="updateBtn">✨ Обновить превью</button>
         <button class="random" id="randomBgBtn">🎨 Случайный фон</button>
+        <button class="pro-btn" id="proBtn">🔥 Активировать PRO версию</button>
     </div>
 
     <div class="preview">
@@ -187,6 +225,26 @@ line-height: 1.4;
     </div>
 </div>
 
+<!-- ОКНО ПОКУПКИ PRO ВЕРСИИ -->
+<div class="modal-overlay" id="proModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+        <div style="font-size: 40px;">🚀</div>
+        <h3>PreviewGen PRO</h3>
+        <p>Откройте доступ ко всем премиум-функциям генератора:</p>
+        <ul>
+            <li>🔥 Уникальные 3D-шрифты для текста</li>
+            <li>🎨 Более 50+ эксклюзивных VIP-градиентов</li>
+            <li>🖼️ Возможность загружать свои картинки на фон</li>
+            <li>⚡ Скачивание в Ultra-HD качестве (4K)</li>
+        </ul>
+        <p style="font-weight: bold; color: #fff;">Стоимость активации: 149 руб.</p>
+        <a href="https://donationalerts.com" target="_blank" class="buy-pro-btn">
+            Перейти к оплате
+        </a>
+    </div>
+</div>
+
 <script>
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
@@ -197,6 +255,15 @@ const categorySelect = document.getElementById('categorySelect');
 const updateBtn = document.getElementById('updateBtn');
 const randomBgBtn = document.getElementById('randomBgBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+
+// Логика для PRO окна
+const proBtn = document.getElementById('proBtn');
+const proModal = document.getElementById('proModal');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+proBtn.addEventListener('click', () => proModal.style.display = 'flex');
+modalCloseBtn.addEventListener('click', () => proModal.style.display = 'none');
+proModal.addEventListener('click', (e) => { if(e.target === proModal) proModal.style.display = 'none'; });
 
 // Список красивых градиентов для фона
 const gradients = [
@@ -212,7 +279,6 @@ const gradients = [
 let currentGradient = gradients[0];
 
 function drawPreview() {
-    // 1. Рисуем фон (градиент)
     let grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     grad.addColorStop(0, currentGradient[0]);
     grad.addColorStop(0.5, currentGradient[1] || currentGradient[0]);
@@ -220,7 +286,6 @@ function drawPreview() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Добавляем декоративные элементы в зависимости от категории
     ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
     const category = categorySelect.value;
     if (category === 'gaming') {
@@ -237,20 +302,17 @@ function drawPreview() {
         ctx.fillText('📸', canvas.width - 250, canvas.height - 80);
     }
 
-    // 3. Настраиваем текст
     const text = textInput.value.toUpperCase();
     ctx.fillStyle = colorInput.value;
     ctx.font = 'bold 75px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
-    // Эффект тени для читаемости текста
     ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
     ctx.shadowBlur = 20;
     ctx.shadowOffsetX = 5;
     ctx.shadowOffsetY = 5;
 
-    // Перенос текста на 2 строки, если он длинный
     const words = text.split(' ');
     let line = '';
     let x = 80;
@@ -271,26 +333,22 @@ function drawPreview() {
     }
     ctx.fillText(line, x, y);
     
-    // Сбрасываем тень для других элементов
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 }
 
-// Переключение случайного фона
 randomBgBtn.addEventListener('click', () => {
     const randomIndex = Math.floor(Math.random() * gradients.length);
     currentGradient = gradients[randomIndex];
     drawPreview();
 });
 
-// Кнопка обновления
 updateBtn.addEventListener('click', drawPreview);
 textInput.addEventListener('input', drawPreview);
 colorInput.addEventListener('input', drawPreview);
 categorySelect.addEventListener('change', drawPreview);
 
-// Скачивание картинки
 downloadBtn.addEventListener('click', () => {
     const link = document.createElement('a');
     link.download = 'preview.png';
@@ -298,7 +356,6 @@ downloadBtn.addEventListener('click', () => {
     link.click();
 });
 
-// Первый запуск отрисовки при загрузке страницы
 window.onload = drawPreview;
 </script>
 
