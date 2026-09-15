@@ -1,6 +1,138 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>PreviewGen</title><style>*{box-sizing:border-box}body{margin:0;background:#0b1020;color:#fff;font-family:system-ui,sans-serif}.wrap{max-width:900px;margin:auto;padding:18px 14px 40px}.head{text-align:center;padding:12px}.head h1{font-size:30px;margin:5px}.head p{color:#aeb7d0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:#121a2e;border:1px solid #283657;border-radius:20px;padding:16px}label{display:block;font-weight:700;margin:10px 0 7px}input,select{width:100%;padding:12px;border-radius:11px;border:1px solid #354263;background:#18213a;color:#fff;font-size:15px}.preview{width:100%;aspect-ratio:16/9;background:#29386a;border-radius:14px;overflow:hidden;position:relative}.preview img{width:100%;height:100%;object-fit:cover;display:none}.shade{position:absolute;inset:0;background:linear-gradient(90deg,#0009,#0001)}.text{position:absolute;left:5%;top:50%;transform:translateY(-50%);font-size:clamp(22px,5vw,52px);font-weight:950;line-height:.95;text-transform:uppercase;text-shadow:3px 3px 0 #000;max-width:90%;word-break:break-word}.badge{position:absolute;right:3%;top:4%;background:#fff;color:#111;padding:7px 10px;border-radius:9px;font-weight:900;font-size:12px}button{border:0;border-radius:12px;padding:13px;font-weight:800;cursor:pointer}.main{width:100%;margin-top:12px;background:#7c8cff;color:#fff}.secondary{background:#202b4b;color:#fff;margin-top:9px;width:100%}.hint{color:#9fa9c2;font-size:13px}@media(max-width:650px){.grid{grid-template-columns:1fr}}</style></head><body><div class="wrap"><div class="head"><div style="font-size:38px">🖼️</div><h1>PreviewGen</h1><p>Генератор превью для видео</p></div><div class="grid"><section class="card"><label>Текст на превью</label><input id="title" maxlength="55" value="ЭТО БЫЛО ЖЕСТКО!"><label>Подзаголовок</label><input id="sub" maxlength="35" value="СМОТРИ ДО КОНЦА"><label>Стиль</label><select id="style"><option value="game">🎮 Игровой</option><option value="clean">✨ Чистый</option><option value="dark">🌑 Тёмный</option></select><label>Фон</label><input id="bg" type="file" accept="image/*"><button class="main" onclick="downloadPreview()">⬇️ Скачать PNG</button><p class="hint">Выбери картинку с телефона — она станет фоном.</p></section><section class="card"><div class="preview" id="preview"><img id="photo"><div class="shade"></div><div class="text" id="outTitle">ЭТО БЫЛО ЖЕСТКО!</div><div class="badge" id="outSub">СМОТРИ ДО КОНЦА</div></div><button class="secondary" onclick="randomText()">🎲 Случайный текст</button>
-<a href="https://www.donationalerts.com/r/ghoul_kanekiken" target="_blank" rel="noopener"
-   style="display:block;text-align:center;text-decoration:none;background:#202b4b;color:#fff;border:1px solid #354263;border-radius:12px;padding:12px 15px;margin-top:9px;font-weight:800">
-   ❤️ Поддержать автора
-</a>
-</section></div></div><script>const title=document.getElementById('title'),sub=document.getElementById('sub'),style=document.getElementById('style');function update(){outTitle.textContent=title.value||'ТВОЁ ПРЕВЬЮ';outSub.textContent=sub.value||'';let p=document.getElementById('preview');if(style.value==='clean'){p.style.background='#e9edff';outTitle.style.color='#111';outTitle.style.textShadow='none'}else if(style.value==='dark'){p.style.background='#111';outTitle.style.color='#fff';outTitle.style.textShadow='3px 3px 0 #000'}else{p.style.background='#29386a';outTitle.style.color='#fff';outTitle.style.textShadow='3px 3px 0 #000'}}title.oninput=sub.oninput=style.onchange=update;bg.onchange=e=>{let f=e.target.files[0];if(f){let r=new FileReader();r.onload=()=>{photo.src=r.result;photo.style.display='block'};r.readAsDataURL(f)}};function randomText(){let a=['Я НЕ ОЖИДАЛ ЭТОГО!','СЕКРЕТ РАСКРЫТ!','ЛУЧШИЙ МОМЕНТ!','ЭТО СЛОМАЛО ИГРУ!','НЕ ПОВТОРЯЙ ЭТО!','ВОТ ЭТО ПОВОРОТ!'];title.value=a[Math.floor(Math.random()*a.length)];update()}function downloadPreview(){let c=document.createElement('canvas'),x=c.getContext('2d'),w=1280,h=720;c.width=w;c.height=h;let im=photo;if(im.style.display==='block'&&im.complete){let s=Math.max(w/im.naturalWidth,h/im.naturalHeight),iw=im.naturalWidth*s,ih=im.naturalHeight*s;x.drawImage(im,(w-iw)/2,(h-ih)/2,iw,ih)}else{x.fillStyle=style.value==='clean'?'#e9edff':style.value==='dark'?'#111':'#29386a';x.fillRect(0,0,w,h)}x.fillStyle='rgba(0,0,0,.35)';x.fillRect(0,0,w,h);x.fillStyle=style.value==='clean'?'#111':'#fff';x.font='900 76px Arial';x.fillText((title.value||'ТВОЁ ПРЕВЬЮ').substring(0,22),70,390);x.font='900 24px Arial';x.fillStyle='#fff';x.fillText((sub.value||'').substring(0,35),w-400,65);let a=document.createElement('a');a.download='preview.png';a.href=c.toDataURL('image/png');a.click()}update();</script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>PreviewGen — генератор превью</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+background:#0b1020;
+color:#f5f7ff;
+}
+
+.wrap{
+max-width:760px;
+margin:auto;
+padding:20px 16px 50px;
+}
+
+.hero{
+text-align:center;
+padding:25px 5px 20px;
+}
+
+.logo{
+font-size:44px;
+}
+
+.hero h1{
+font-size:36px;
+margin:5px 0;
+}
+
+.hero p{
+color:#aeb7d0;
+margin:0;
+}
+
+.card{
+background:#121a2e;
+border:1px solid #273354;
+border-radius:22px;
+padding:18px;
+margin-top:16px;
+box-shadow:0 12px 35px #0005;
+}
+
+label{
+display:block;
+font-weight:800;
+margin:15px 0 8px;
+}
+
+input,select{
+width:100%;
+padding:15px;
+border-radius:14px;
+border:1px solid #354263;
+background:#18213a;
+color:white;
+font-size:16px;
+outline:none;
+}
+
+button{
+border:0;
+border-radius:14px;
+padding:14px;
+font-size:16px;
+font-weight:800;
+cursor:pointer;
+}
+
+.main{
+width:100%;
+margin-top:15px;
+background:#7c8cff;
+color:white;
+}
+
+.random{
+width:100%;
+margin-top:10px;
+background:#202b4b;
+color:white;
+}
+
+.preview{
+margin-top:20px;
+background:#111a35;
+border:1px solid #354263;
+border-radius:22px;
+padding:14px;
+}
+
+canvas{
+display:block;
+width:100%;
+height:auto;
+border-radius:16px;
+background:#18213a;
+}
+
+.download{
+width:100%;
+margin-top:12px;
+background:#7c8cff;
+color:white;
+}
+
+.pro-btn{
+width:100%;
+margin-top:10px;
+background:#ffbf45;
+color:#111;
+}
+
+.donate{
+display:block;
+text-align:center;
+text-decoration:none;
+background:#202b4b;
+color:white;
+border:1px solid #354263;
+border-radius:14px;
+padding:14px;
+margin-top:10px;
+font-weight:800;
+}
+
+.note{
+color:#aeb7d0;
+font
