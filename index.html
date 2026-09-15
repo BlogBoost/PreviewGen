@@ -74,6 +74,12 @@ padding:14px;
 font-size:16px;
 font-weight:800;
 cursor:pointer;
+transition: transform 0.1s, opacity 0.2s;
+}
+
+button:active {
+transform: scale(0.98);
+opacity: 0.9;
 }
 
 .main{
@@ -124,15 +130,177 @@ color:#111;
 display:block;
 text-align:center;
 text-decoration:none;
-background:#202b4b;
+background: linear-gradient(135deg, #ff9900, #ff5500);
 color:white;
-border:1px solid #354263;
 border-radius:14px;
 padding:14px;
-margin-top:10px;
+margin-top:15px;
 font-weight:800;
+box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
 }
 
 .note{
 color:#aeb7d0;
-font
+font-size: 13px;
+text-align: center;
+margin-top: 15px;
+line-height: 1.4;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="hero">
+        <div class="logo">🖼️</div>
+        <h1>PreviewGen</h1>
+        <p>Создавай крутые превью для видео за пару секунд</p>
+    </div>
+
+    <div class="card">
+        <label for="textInput">Текст на превью</label>
+        <input type="text" id="textInput" value="КАК СОЗДАТЬ СВОЙ САЙТ" placeholder="Введите заголовок...">
+
+        <label for="colorInput">Цвет текста</label>
+        <input type="color" id="colorInput" value="#ffffff" style="padding:5px; height:50px; cursor:pointer;">
+
+        <label for="categorySelect">Категория / Стиль</label>
+        <select id="categorySelect">
+            <option value="gaming">🎮 Игровой стиль</option>
+            <option value="code">💻 Программирование</option>
+            <option value="crypto">💰 Бизнес и Крипта</option>
+            <option value="vlog">🎥 Влог / Жизнь</option>
+        </select>
+
+        <button class="main" id="updateBtn">✨ Обновить превью</button>
+        <button class="random" id="randomBgBtn">🎨 Случайный фон</button>
+    </div>
+
+    <div class="preview">
+        <canvas id="previewCanvas" width="1280" height="720"></canvas>
+        <button class="download" id="downloadBtn">📥 Скачать превью (1280x720)</button>
+        
+        <a href="https://donationalerts.com" target="_blank" class="donate">
+            👑 Поддержать через DonationAlerts
+        </a>
+        <div class="note">Понравился генератор? Поддержи автора донатом на развитие проекта!</div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('previewCanvas');
+const ctx = canvas.getContext('2d');
+
+const textInput = document.getElementById('textInput');
+const colorInput = document.getElementById('colorInput');
+const categorySelect = document.getElementById('categorySelect');
+const updateBtn = document.getElementById('updateBtn');
+const randomBgBtn = document.getElementById('randomBgBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+// Список красивых градиентов для фона
+const gradients = [
+    ['#0f2027', '#203a43', '#2c5364'],
+    ['#130cb7', '#52e5e7'],
+    ['#ee0979', '#ff6a00'],
+    ['#bf55ec', '#78281f'],
+    ['#11998e', '#38ef7d'],
+    ['#8e2de2', '#4a00e0'],
+    ['#fc4a1a', '#f7b733']
+];
+
+let currentGradient = gradients[0];
+
+function drawPreview() {
+    // 1. Рисуем фон (градиент)
+    let grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, currentGradient[0]);
+    grad.addColorStop(0.5, currentGradient[1] || currentGradient[0]);
+    grad.addColorStop(1, currentGradient[2] || currentGradient[0]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Добавляем декоративные элементы в зависимости от категории
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    const category = categorySelect.value;
+    if (category === 'gaming') {
+        ctx.font = '180px sans-serif';
+        ctx.fillText('🎮', canvas.width - 250, canvas.height - 80);
+    } else if (category === 'code') {
+        ctx.font = '200px monospace';
+        ctx.fillText('</>', canvas.width - 350, canvas.height - 100);
+    } else if (category === 'crypto') {
+        ctx.font = '200px sans-serif';
+        ctx.fillText('₿', canvas.width - 220, canvas.height - 100);
+    } else if (category === 'vlog') {
+        ctx.font = '180px sans-serif';
+        ctx.fillText('📸', canvas.width - 250, canvas.height - 80);
+    }
+
+    // 3. Настраиваем текст
+    const text = textInput.value.toUpperCase();
+    ctx.fillStyle = colorInput.value;
+    ctx.font = 'bold 75px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    // Эффект тени для читаемости текста
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 5;
+
+    // Перенос текста на 2 строки, если он длинный
+    const words = text.split(' ');
+    let line = '';
+    let x = 80;
+    let y = canvas.height / 2 - 40;
+    let lineHeight = 90;
+
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        let metrics = ctx.measureText(testLine);
+        let testWidth = metrics.width;
+        if (testWidth > canvas.width - 400 && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+    
+    // Сбрасываем тень для других элементов
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+}
+
+// Переключение случайного фона
+randomBgBtn.addEventListener('click', () => {
+    const randomIndex = Math.floor(Math.random() * gradients.length);
+    currentGradient = gradients[randomIndex];
+    drawPreview();
+});
+
+// Кнопка обновления
+updateBtn.addEventListener('click', drawPreview);
+textInput.addEventListener('input', drawPreview);
+colorInput.addEventListener('input', drawPreview);
+categorySelect.addEventListener('change', drawPreview);
+
+// Скачивание картинки
+downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'preview.png';
+    link.href = canvas.toDataURL();
+    link.click();
+});
+
+// Первый запуск отрисовки при загрузке страницы
+window.onload = drawPreview;
+</script>
+
+</body>
+</html>
