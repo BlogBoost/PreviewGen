@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ru">
 <head>
@@ -148,7 +147,6 @@ margin-top: 15px;
 line-height: 1.4;
 }
 
-/* Стили для всплывающего окна PRO версии */
 .modal-overlay {
 display: none;
 position: fixed;
@@ -184,7 +182,6 @@ text-decoration: none; padding: 14px; border-radius: 14px;
 font-weight: bold; font-size: 16px; margin-top: 15px;
 }
 
-/* Поле для ввода промокода в модалке */
 .promo-input {
 margin-top: 15px;
 padding: 10px;
@@ -222,7 +219,6 @@ font-size: 14px;
             <option value="vlog">🎥 Влог / Жизнь</option>
         </select>
 
-        <!-- СКРЫТАЯ PRO-ФУНКЦИЯ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ВВОДА ПАРОЛЯ) -->
         <div id="proFeaturesBlock" style="display: none; border: 1px dashed #ffbf45; padding: 12px; border-radius: 14px; margin-top: 15px; background: rgba(255,191,69,0.05);">
             <label style="color: #ffbf45; margin-top: 0;">👑 Настройки PRO: Загрузить свой фон</label>
             <input type="file" id="imageLoader" accept="image/*" style="padding: 10px; font-size: 14px;">
@@ -244,7 +240,6 @@ font-size: 14px;
     </div>
 </div>
 
-<!-- ОКНО ПОКУПКИ PRO ВЕРСИИ -->
 <div class="modal-overlay" id="proModal">
     <div class="modal-content">
         <button class="modal-close" id="modalCloseBtn">&times;</button>
@@ -279,7 +274,6 @@ const downloadBtn = document.getElementById('downloadBtn');
 const imageLoader = document.getElementById('imageLoader');
 const proFeaturesBlock = document.getElementById('proFeaturesBlock');
 
-// Логика для PRO окна
 const proBtn = document.getElementById('proBtn');
 const proModal = document.getElementById('proModal');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
@@ -292,7 +286,6 @@ proBtn.addEventListener('click', () => proModal.style.display = 'flex');
 modalCloseBtn.addEventListener('click', () => proModal.style.display = 'none');
 proModal.addEventListener('click', (e) => { if(e.target === proModal) proModal.style.display = 'none'; });
 
-// Проверка секретного кода админа / покупателя
 promoCodeInput.addEventListener('input', () => {
     const code = promoCodeInput.value.trim().toUpperCase();
     if (code === 'ADMIN777') {
@@ -308,7 +301,6 @@ promoCodeInput.addEventListener('input', () => {
     }
 });
 
-// Обработка загрузки пользовательского изображения
 imageLoader.addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = function(event){
@@ -319,10 +311,10 @@ imageLoader.addEventListener('change', (e) => {
         }
         img.src = event.target.result;
     }
-    reader.readAsDataURL(e.target.files[0]);
+    reader.readAsDataURL(e.target.files);
 });
 
-// Список красивых градиентов для фона
+// Наборы градиентов
 const gradients = [
     ['#0f2027', '#203a43', '#2c5364'],
     ['#130cb7', '#52e5e7'],
@@ -333,23 +325,22 @@ const gradients = [
     ['#fc4a1a', '#f7b733']
 ];
 
+// Устанавливаем первый градиент по умолчанию изначально
 let currentGradient = gradients[0];
 
 function drawPreview() {
-    // Если активирован PRO режим и загружена картинка владельца
     if (isProActivated && userUploadedImage) {
         ctx.drawImage(userUploadedImage, 0, 0, canvas.width, canvas.height);
     } else {
-        // Обычный градиентный фон
         let grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         grad.addColorStop(0, currentGradient[0]);
-        grad.addColorStop(0.5, currentGradient[1] || currentGradient[0]);
-        grad.addColorStop(1, currentGradient[2] || currentGradient[0]);
+        grad.addColorStop(0.5, currentGradient[1]);
+        grad.addColorStop(1, currentGradient[2]);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
     const category = categorySelect.value;
     if (category === 'gaming') {
         ctx.font = '180px sans-serif';
@@ -359,4 +350,18 @@ function drawPreview() {
         ctx.fillText('</>', canvas.width - 350, canvas.height - 100);
     } else if (category === 'crypto') {
         ctx.font = '200px sans-serif';
-ctx.fillText('₿', canvas.width - 220, canvas.height - 100);} else if (category === 'vlog') {ctx.font = '180px sans-serif';ctx.fillText('📸', canvas.width - 250, canvas.height - 80);}const text = textInput.value.toUpperCase();ctx.fillStyle = colorInput.value;ctx.font = 'bold 75px system-ui, -apple-system, sans-serif';ctx.textAlign = 'left';ctx.textBaseline = 'middle';ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';ctx.shadowBlur = 20;ctx.shadowOffsetX = 5;ctx.shadowOffsetY = 5;const words = text.split(' ');let line = '';let x = 80;let y = canvas.height / 2 - 40;let lineHeight = 90;for (let n = 0; n < words.length; n++) {let testLine = line + words[n] + ' ';let metrics = ctx.measureText(testLine);let testWidth = metrics.width;if (testWidth > canvas.width - 400 && n > 0) {ctx.fillText(line, x, y);line = words[n] + ' ';y += lineHeight;} else {line = testLine;}}ctx.fillText(line, x, y);ctx.shadowBlur = 0;ctx.shadowOffsetX = 0;ctx.shadowOffsetY = 0;}randomBgBtn.addEventListener('click', () => {userUploadedImage = null; // Сбрасываем картинку при клике на случайный фонconst randomIndex = Math.floor(Math.random() * gradients.length);currentGradient = gradients[randomIndex];drawPreview();});updateBtn.addEventListener('click', drawPreview);textInput.addEventListener('input', drawPreview);colorInput.addEventListener('input', drawPreview);categorySelect.addEventListener('change', drawPreview);downloadBtn.addEventListener('click', () => {const link = document.createElement('a');link.download = 'preview.png';link.href = canvas.toDataURL();link.click();});window.onload = drawPreview;
+        ctx.fillText('₿', canvas.width - 220, canvas.height - 100);
+    } else if (category === 'vlog') {
+        ctx.font = '180px sans-serif';
+        ctx.fillText('📸', canvas.width - 250, canvas.height - 80);
+    }
+
+    const text = textInput.value.toUpperCase();
+    ctx.fillStyle = colorInput.value;
+    ctx.font = 'bold 75px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 25;
+ctx.shadowOffsetX = 6;ctx.shadowOffsetY = 6;const words = text.split(' ');let line = '';let x = 80;let y = canvas.height / 2 - 40;let lineHeight = 95;for (let n = 0; n < words.length; n++) {let testLine = line + words[n] + ' ';let metrics = ctx.measureText(testLine);let testWidth = metrics.width;if (testWidth > canvas.width - 450 && n > 0) {ctx.fillText(line, x, y);line = words[n] + ' ';y += lineHeight;} else {line = testLine;}}ctx.fillText(line, x, y);ctx.shadowBlur = 0;ctx.shadowOffsetX = 0;ctx.shadowOffsetY = 0;}randomBgBtn.addEventListener('click', () => {userUploadedImage = null;const randomIndex = Math.floor(Math.random() * gradients.length);currentGradient = gradients[randomIndex];drawPreview();});updateBtn.addEventListener('click', drawPreview);textInput.addEventListener('input', drawPreview);colorInput.addEventListener('input', drawPreview);categorySelect.addEventListener('change', drawPreview);downloadBtn.addEventListener('click', () => {const link = document.createElement('a');link.download = 'preview.png';link.href = canvas.toDataURL();link.click();});// Запуск отрисовкиsetTimeout(drawPreview, 100);
